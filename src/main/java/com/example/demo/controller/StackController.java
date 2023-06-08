@@ -22,11 +22,9 @@ public class StackController {
     this.stackInterface = stackInterface;
   }
 
-  @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<NodeStack> createStack(@RequestBody NodeStack nodeStack) {
-    int maxSize = nodeStack.getMaxSize();
-    nodeStack = stackInterface.createStack(maxSize);
-    return ResponseEntity.status(HttpStatus.CREATED).body(nodeStack);
+  @PostMapping
+  public ResponseEntity<Long> createStack(@RequestParam("maxSize") int  maxSize) {
+    return ResponseEntity.status(HttpStatus.CREATED).body(stackInterface.createStack(maxSize));
   }
 
   @PostMapping(value = "/push", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -35,17 +33,15 @@ public class StackController {
     return ResponseEntity.status(HttpStatus.CREATED).body(node);
   }
 
-  @DeleteMapping(value = "/pop", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<NodeStack> popElement(@RequestBody NodeStack nodeStack) {
-    Long stackId = nodeStack.getStackId();
-    this.stackInterface.popElement(stackId);
-    return ResponseEntity.status(HttpStatus.CREATED).body(nodeStack);
+  @DeleteMapping(value = "/pop/{stackId}")
+  public ResponseEntity<Node> popElement(@PathVariable Long stackId) {
+    return ResponseEntity.ok(this.stackInterface.popElement(stackId));
   }
 
   @GetMapping(value = "/peek/{stackId}")
-  public Node peekElement(@PathVariable Long stackId){
+  public ResponseEntity<Node> peekElement(@PathVariable Long stackId){
     Node node = this.stackInterface.peekElement(stackId);
-    return node;
+    return ResponseEntity.ok(node);
 }
 }
 
