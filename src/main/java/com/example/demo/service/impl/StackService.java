@@ -8,12 +8,11 @@ import com.example.demo.model.exceptions.StackIsEmptyException;
 import com.example.demo.model.exceptions.StackIsFullException;
 import com.example.demo.repository.NodeRepository;
 import com.example.demo.repository.StackRepository;
-import com.example.demo.service.StackInterface;
+import com.example.demo.service.Stack;
 import org.springframework.stereotype.Service;
 
 @Service
-public class StackService implements StackInterface {
-
+public class StackService implements Stack {
 
   private final StackRepository stackRepository;
   private final NodeRepository nodeRepository;
@@ -29,7 +28,6 @@ public class StackService implements StackInterface {
       throw new MaximumSizeSmallerOrEqualToZeroException();
     }
     NodeStack nodeStack = new NodeStack(maxSize);
-    nodeStack.setNodes(null);
     this.stackRepository.save(nodeStack);
     return nodeStack.getStackId();
   }
@@ -40,9 +38,9 @@ public class StackService implements StackInterface {
     NodeStack nodeStack =
         this.stackRepository
             .findById(node.getStack().getStackId())
-            .orElseThrow(() -> new RuntimeException("Stack does not exist"));
+            .orElseThrow(() -> new StackDoesNotExistException());
 
-    if (nodeStack.getNodes().size() == nodeStack.getMaxSize()) {
+    if (isFull(nodeStack)) {
       throw new StackIsFullException();
     }
     nodeStack.getNodes().add(node);
@@ -53,27 +51,42 @@ public class StackService implements StackInterface {
   @Override
   public Node popElement(Long stackId) {
 
-    NodeStack nodeStack = this.stackRepository.findNodeStackByStackId(stackId);
-    if (nodeStack.getNodes().isEmpty()) {
-      throw new StackIsEmptyException();
-    }
-    Node nodeForRemoval = this.getLastNode(stackId);
+    NodeStack nodeStack =
+        this.stackRepository.findById(stackId).orElseThrow(() -> new StackDoesNotExistException());
+
+    Node nodeForRemoval = this.getLastNode(nodeStack);
     nodeStack.getNodes().remove(nodeForRemoval);
-     this.nodeRepository.delete(nodeForRemoval);
-     return nodeForRemoval;
+    this.nodeRepository.delete(nodeForRemoval);
+    return nodeForRemoval;
   }
 
   @Override
   public Node peekElement(Long stackId) {
-    return this.getLastNode(stackId);
+    NodeStack nodeStack =
+        this.stackRepository.findById(stackId).orElseThrow(() -> new StackDoesNotExistException());
+    return this.getLastNode(nodeStack);
   }
 
-  public Node getLastNode(Long stackId){
-    NodeStack nodeStack = this.stackRepository.findNodeStackByStackId(stackId);
-    if (nodeStack == null) {
-      throw new StackDoesNotExistException();
+  public Node getLastNode(NodeStack nodeStack) {
+    if (isEmpty(nodeStack)) {
+      throw new StackIsEmptyException();
     }
     return nodeStack.getNodes().get(nodeStack.getNodes().size() - 1);
-}
-}
+  }
 
+  public boolean isFull(NodeStack nodeStack) {
+    if (nodeStack.getNodes().size() == nodeStack.getMaxSize()) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public boolean isEmpty(NodeStack nodeStack) {
+    if (nodeStack.getNodes().isEmpty()) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+}

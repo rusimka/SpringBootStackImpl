@@ -2,7 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.model.Node;
 
-public interface StackInterface {
+public interface Stack {
 
     public Long createStack(int maxSize);
 
