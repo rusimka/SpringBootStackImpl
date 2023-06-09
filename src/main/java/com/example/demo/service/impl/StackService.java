@@ -35,10 +35,7 @@ public class StackService implements Stack {
   @Override
   public Node pushElement(Node node) {
 
-    NodeStack nodeStack =
-        this.stackRepository
-            .findById(node.getStack().getStackId())
-            .orElseThrow(() -> new StackDoesNotExistException());
+    NodeStack nodeStack = findNodeStackByStackId(node.getStack().getStackId());
 
     if (isFull(nodeStack)) {
       throw new StackIsFullException();
@@ -51,8 +48,7 @@ public class StackService implements Stack {
   @Override
   public Node popElement(Long stackId) {
 
-    NodeStack nodeStack =
-        this.stackRepository.findById(stackId).orElseThrow(() -> new StackDoesNotExistException());
+    NodeStack nodeStack = findNodeStackByStackId(stackId);
 
     Node nodeForRemoval = this.getLastNode(nodeStack);
     nodeStack.getNodes().remove(nodeForRemoval);
@@ -62,9 +58,12 @@ public class StackService implements Stack {
 
   @Override
   public Node peekElement(Long stackId) {
-    NodeStack nodeStack =
-        this.stackRepository.findById(stackId).orElseThrow(() -> new StackDoesNotExistException());
+    NodeStack nodeStack = findNodeStackByStackId(stackId);
     return this.getLastNode(nodeStack);
+  }
+
+  public NodeStack findNodeStackByStackId(Long stackId) {
+    return this.stackRepository.findById(stackId).orElseThrow(StackDoesNotExistException::new);
   }
 
   public Node getLastNode(NodeStack nodeStack) {
@@ -75,18 +74,10 @@ public class StackService implements Stack {
   }
 
   public boolean isFull(NodeStack nodeStack) {
-    if (nodeStack.getNodes().size() == nodeStack.getMaxSize()) {
-      return true;
-    } else {
-      return false;
-    }
+    return nodeStack.getNodes().size() == nodeStack.getMaxSize();
   }
 
   public boolean isEmpty(NodeStack nodeStack) {
-    if (nodeStack.getNodes().isEmpty()) {
-      return true;
-    } else {
-      return false;
-    }
+    return nodeStack.getNodes().isEmpty();
   }
 }

@@ -22,6 +22,11 @@ public class StackController {
     return ResponseEntity.status(HttpStatus.CREATED).body(stackInterface.createStack(maxSize));
   }
 
+  /*
+  This functionality can be modified by sending the 'stackId' as Query Parameter, and 'node_data' as Request Body.
+
+  Also, I am familiar with the concept of handling exceptions on the Controller side, but in the interest of time,I haven't implemented.
+   */
   @PostMapping(value = "/push", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Node> pushElement(@RequestBody Node node) {
     this.stackInterface.pushElement(node);
